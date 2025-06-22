@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <title>多功能通用計分板</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f2f2f2;
+      padding: 2em;
+      text-align: center;
+    }
+    .container {
+      background: white;
+      max-width: 700px;
+      margin: auto;
+      padding: 2em;
+      border-radius: 12px;
+      box-shadow: 0 0 10px #aaa;
+    }
+    input, select, button {
+      padding: 0.6em;
+      margin: 0.5em;
+      font-size: 1em;
+    }
+    .teams {
+      display: flex;
+      justify-content: space-around;
+      margin: 1.5em 0;
+    }
+    .team {
+      width: 40%;
+    }
+    .set{
+      font-size: 1.5em;
+      margin: 0.3em 0;
+    }
+    .score {
+      font-size: 3em;
+      margin: 0.3em 0;
+    }
+    #scoreSection {
+      display: none;
+    }
+  </style>
+</head>
+<body>
+
+<div class="container">
+  <h2>通用比賽計分板</h2>
+
+  <!-- ⚙️ 設定區 -->
+  <div id="setupSection">
+    <div>
+      <label>比賽模式：</label>
+      <select id="matchType">
+        <option value="2">BO3（2大分勝）</option>
+        <option value="3" selected>BO5（3大分勝）</option>
+        <option value="4">BO7（4大分勝）</option>
+      </select>
+    </div>
+
+    <div>
+      <input type="text" id="teamAName" placeholder="隊伍A名稱" value="隊伍A">
+      <input type="text" id="teamBName" placeholder="隊伍B名稱" value="隊伍B">
+    </div>
+
+    <button onclick="startMatch()">✅ 開始比賽</button>
+  </div>
+
+  <!-- 🏀 計分區 -->
+  <div id="scoreSection">
+    <div class="teams">
+      <div class="team">
+        <h3 id="nameA">隊伍A</h3>
+        <div class="set">Set:<span id="setA">0</span></div>
+        <div class="score"><span id="scoreA">0</span></div>
+        <button onclick="addPoint('A')">+1</button>
+        <button onclick="subPoint('A')">-1</button>
+      </div>
+
+      <div class="team">
+        <h3 id="nameB">隊伍B</h3>
+        <div class="set">Set:<span id="setB">0</span></div>
+        <div class="score"><span id="scoreB">0</span></div>
+        <button onclick="addPoint('B')">+1</button>
+        <button onclick="subPoint('B')">-1</button>
+      </div>
+    </div>
+
+    <button onclick="resetMatch()">🔁 重置比賽</button>
+  </div>
+</div>
+
+<script>
+  // 基礎變數
+  let scoreA = 0, scoreB = 0;
+  let setA = 0, setB = 0;
+  const SCORE_TO_WIN_SET = 11;
+  let setWinTarget = 3;
+  let matchStarted = false;
+
+  // 設定 -> 計分流程
+  function startMatch() {
+    const nameA = document.getElementById("teamAName").value.trim();
+    const nameB = document.getElementById("teamBName").value.trim();
+
+    if (!nameA || !nameB) {
+      alert("請輸入兩隊名稱！");
+      return;
+    }
+
+    setWinTarget = parseInt(document.getElementById("matchType").value);
+
+    // 設定名稱
+    document.getElementById("nameA").textContent = nameA;
+    document.getElementById("nameB").textContent = nameB;
+
+    // 顯示計分區，隱藏設定區
+    document.getElementById("setupSection").style.display = "none";
+    document.getElementById("scoreSection").style.display = "block";
+
+    matchStarted = true;
+  }
+
+  function addPoint(team) {
+    if (!matchStarted) return;
+
+    if (setA >= setWinTarget || setB >= setWinTarget) {
+      alert("比賽已結束！");
+      return;
+    }
+
+    if (team === 'A') {
+      scoreA++;
+    } else {
+      scoreB++;
+    }
+
+    updateScores();
+
+    if (scoreA >= SCORE_TO_WIN_SET || scoreB >= SCORE_TO_WIN_SET) {
+      if (scoreA > scoreB) {
+        setA++;
+        alert(`${document.getElementById("nameA").textContent} 贏得此局！`);
+      } else {
+        setB++;
+        alert(`${document.getElementById("nameB").textContent} 贏得此局！`);
+      }
+      scoreA = 0;
+      scoreB = 0;
+      updateScores();
+      checkMatchEnd();
+    }
+  }
+    function subPoint(team) {
+    if (!matchStarted) return;
+
+    if (setA >= setWinTarget || setB >= setWinTarget) {
+      alert("比賽已結束！");
+      return;
+    }
+
+    if (team === 'A') {
+      if(scoreA>0){
+        scoreA--;
+      }      
+    } 
+    else {
+       if(scoreB>0){
+        scoreB--;
+       }      
+    }
+
+    updateScores();
+}
+  function updateScores() {
+    document.getElementById("scoreA").textContent = scoreA;
+    document.getElementById("scoreB").textContent = scoreB;
+    document.getElementById("setA").textContent = setA;
+    document.getElementById("setB").textContent = setB;
+  }
+
+  function checkMatchEnd() {
+    if (setA >= setWinTarget || setB >= setWinTarget) {
+      const winner = setA > setB
+        ? document.getElementById("nameA").textContent
+        : document.getElementById("nameB").textContent;
+      alert(`🏆 比賽結束！勝方為 ${winner}`);
+    }
+  }
+
+  function resetMatch() {
+    if (!confirm("確定要重置整場比賽？")) return;
+    scoreA = 0; scoreB = 0;
+    setA = 0; setB = 0;
+    matchStarted = false;
+
+    updateScores();
+
+    // 重置畫面
+    document.getElementById("setupSection").style.display = "block";
+    document.getElementById("scoreSection").style.display = "none";
+  }
+</script>
+
+</body>
+</html>
