@@ -54,10 +54,17 @@
     <div>
       <label>比賽模式：</label>
       <select id="matchType">
-        <option value="2">BO3（2大分勝）</option>
-        <option value="3" selected>BO5（3大分勝）</option>
-        <option value="4">BO7（4大分勝）</option>
+        <option value="1">BO1</option>
+        <option value="2">BO3</option>
+        <option value="3" selected>BO5</option>
+        <option value="4">BO7</option>
+        <option value="5">BO9</option>
       </select>
+    </div>
+
+    <div>
+      <label>每局小分勝利分數：</label>
+      <input type="number" id="scoreWinTarget" min="1" value="11"> 
     </div>
 
     <div>
@@ -96,31 +103,36 @@
   // 基礎變數
   let scoreA = 0, scoreB = 0;
   let setA = 0, setB = 0;
-  const SCORE_TO_WIN_SET = 11;
+  let SCORE_TO_WIN_SET = 11;
   let setWinTarget = 3;
   let matchStarted = false;
 
   // 設定 -> 計分流程
   function startMatch() {
     const nameA = document.getElementById("teamAName").value.trim();
-    const nameB = document.getElementById("teamBName").value.trim();
+  const nameB = document.getElementById("teamBName").value.trim();
+  const smallScore = parseInt(document.getElementById("scoreWinTarget").value); // ⭐ 取得使用者設定
 
-    if (!nameA || !nameB) {
-      alert("請輸入兩隊名稱！");
-      return;
-    }
+  if (!nameA || !nameB) {
+    alert("請輸入兩隊名稱！");
+    return;
+  }
 
-    setWinTarget = parseInt(document.getElementById("matchType").value);
+  if (isNaN(smallScore) || smallScore < 1) {
+    alert("請輸入有效的小分勝利分數！");
+    return;
+  }
 
-    // 設定名稱
-    document.getElementById("nameA").textContent = nameA;
-    document.getElementById("nameB").textContent = nameB;
+  SCORE_TO_WIN_SET = smallScore; // ⭐ 設定小分勝利條件
+  setWinTarget = parseInt(document.getElementById("matchType").value);
 
-    // 顯示計分區，隱藏設定區
-    document.getElementById("setupSection").style.display = "none";
-    document.getElementById("scoreSection").style.display = "block";
+  document.getElementById("nameA").textContent = nameA;
+  document.getElementById("nameB").textContent = nameB;
 
-    matchStarted = true;
+  document.getElementById("setupSection").style.display = "none";
+  document.getElementById("scoreSection").style.display = "block";
+
+  matchStarted = true;
   }
 
   function addPoint(team) {
