@@ -96,6 +96,10 @@
     </div>
 
     <button onclick="resetMatch()">🔁 重置比賽</button>
+
+    <hr>
+    <h4>每局結果紀錄</h4>
+    <ul id="resultList"></ul> 
   </div>
 </div>
 
@@ -106,10 +110,11 @@
   let SCORE_TO_WIN_SET = 11;
   let setWinTarget = 3;
   let matchStarted = false;
+  let roundResults = [];
 
   // 設定 -> 計分流程
   function startMatch() {
-    const nameA = document.getElementById("teamAName").value.trim();
+  const nameA = document.getElementById("teamAName").value.trim();
   const nameB = document.getElementById("teamBName").value.trim();
   const smallScore = parseInt(document.getElementById("scoreWinTarget").value); // ⭐ 取得使用者設定
 
@@ -125,6 +130,13 @@
 
   SCORE_TO_WIN_SET = smallScore; // ⭐ 設定小分勝利條件
   setWinTarget = parseInt(document.getElementById("matchType").value);
+
+  const setElements = document.querySelectorAll(".set");
+  if (setWinTarget === 1) {
+    setElements.forEach(el => el.style.display = "none");
+  } else {
+    setElements.forEach(el => el.style.display = "block");
+  }
 
   document.getElementById("nameA").textContent = nameA;
   document.getElementById("nameB").textContent = nameB;
@@ -152,16 +164,32 @@
     updateScores();
 
     if (scoreA >= SCORE_TO_WIN_SET || scoreB >= SCORE_TO_WIN_SET) {
+      const nameA = document.getElementById("nameA").textContent;
+      const nameB = document.getElementById("nameB").textContent;
+      let winner = "";
+
       if (scoreA > scoreB) {
         setA++;
-        alert(`${document.getElementById("nameA").textContent} 贏得此局！`);
+        winner = nameA;
+        alert(`${nameA} 贏得此局！`);
       } else {
         setB++;
-        alert(`${document.getElementById("nameB").textContent} 贏得此局！`);
+        winner = nameB;
+        alert(`${nameB} 贏得此局！`);
       }
+
+      // ⭐ 新增紀錄資料
+      roundResults.push({
+        round: roundResults.length + 1,
+        scoreA: scoreA,
+        scoreB: scoreB,
+        winner: winner
+      });
+
       scoreA = 0;
       scoreB = 0;
       updateScores();
+      updateResultList(); // ⭐ 更新畫面
       checkMatchEnd();
     }
   }
@@ -213,6 +241,18 @@
     // 重置畫面
     document.getElementById("setupSection").style.display = "block";
     document.getElementById("scoreSection").style.display = "none";
+    roundResults = []; // ⭐ 清空紀錄
+    updateResultList(); // ⭐ 清空畫面
+  }
+  function updateResultList() {
+    const list = document.getElementById("resultList");
+    list.innerHTML = ""; // 清空原有
+
+    roundResults.forEach(r => {
+      const item = document.createElement("li");
+      item.textContent = `第${r.round}局：${r.scoreA} - ${r.scoreB}（勝：${r.winner}）`;
+      list.appendChild(item);
+    });
   }
 </script>
 
